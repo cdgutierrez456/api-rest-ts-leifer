@@ -1,14 +1,24 @@
+import { Auth } from "../interfaces/auth.interface"
 import { User } from "../interfaces/user.interface"
 import UserModel from "../models/user"
+import { encrypt, verified } from "../utils/password.handle"
 
 export const registerNewUser = async (authUser: User) => {
-  const { email } = authUser
-  const checkIs = await UserModel.findOne({ email: email })
+  const { email, password, name, description } = authUser
+  const checkIs = await UserModel.findOne({ email })
   if (checkIs) return "Already user";
-  const registerNewUser = await UserModel.create(authUser);
+  const passHash = await encrypt(password)
+  const registerNewUser = await UserModel.create({ name, description, email, password: passHash });
+
   return registerNewUser;
 }
 
-export const loginUser = async () => {
+export const loginUser = async ({email, password}: Auth) => {
+  const checkIs = await UserModel.findOne({ email })
+  if (!checkIs) return "INVALID_DATA";
+  const passwordHash = checkIs.password
 
+  const isCorrect = await verified(password, passwordHash)
+  if (!isCorrect) return "ERROR_IN_LOGGIN";
+  return checkIs;
 }

@@ -8,5 +8,7 @@ export const registerCtrl = async (req: Request, res: Response) => {
 }
 
 export const loginCtrl = async (req: Request, res: Response) => {
-
+  const { body } = req
+  const responseUser = await loginUser(body)
+  res.send(responseUser)
 }
