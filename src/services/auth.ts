@@ -1,6 +1,7 @@
 import { Auth } from "../interfaces/auth.interface"
 import { User } from "../interfaces/user.interface"
 import UserModel from "../models/user"
+import { generateToken } from "../utils/jwt.handle"
 import { encrypt, verified } from "../utils/password.handle"
 
 export const registerNewUser = async (authUser: User) => {
@@ -17,8 +18,13 @@ export const loginUser = async ({email, password}: Auth) => {
   const checkIs = await UserModel.findOne({ email })
   if (!checkIs) return "INVALID_DATA";
   const passwordHash = checkIs.password
-
   const isCorrect = await verified(password, passwordHash)
   if (!isCorrect) return "ERROR_IN_LOGGIN";
-  return checkIs;
+
+  const token = await generateToken(checkIs.email)
+  const data = {
+    token,
+    user: checkIs
+  }
+  return data;
 }
